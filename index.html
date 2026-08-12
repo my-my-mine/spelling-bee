@@ -29,59 +29,59 @@
       margin: 0 0 10px;
       font-size: 2rem;
     }
-    p {
+    .intro {
       margin: 0 0 28px;
       color: #555;
       line-height: 1.6;
     }
-    .buttons {
-      display: grid;
-      gap: 16px;
-    }
-    a {
+    .start {
       display: block;
+      width: 100%;
       padding: 18px 16px;
+      border: 0;
       border-radius: 12px;
-      text-decoration: none;
-      font-size: 1.1rem;
-      font-weight: 600;
+      font: inherit;
+      font-size: 1.15rem;
+      font-weight: 700;
       background: #222;
       color: white;
+      cursor: pointer;
       touch-action: manipulation;
     }
-    a:active {
+    .start:active {
       transform: scale(.99);
     }
-    .sub {
-      display: block;
-      margin-top: 5px;
-      font-size: .85rem;
-      font-weight: 400;
-      opacity: .8;
+    .notice {
+      margin: 24px 0 0;
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: #f3f3f3;
+      color: #555;
+      font-size: .9rem;
+      line-height: 1.6;
+      text-align: left;
     }
   </style>
 </head>
 <body>
   <main>
     <h1>Spelling Bee</h1>
-    <p>使っている端末を選んでください。</p>
+    <p class="intro">英単語のスペル練習を始めます。</p>
 
-    <div class="buttons">
-　　　　<a href="#" onclick="location.href='apple.html?v=' + Date.now(); return false;">
-  　　　　Mac / iPhone / iPad
-  　　　　<span class="sub">Apple版</span>
-　　　　</a>
+    <button class="start" type="button" onclick="openApp()">
+      スタート
+    </button>
 
-      <a href="#" onclick="location.href='android.html?v=' + Date.now(); return false;">
-  　　　　Android
-  　　　　<span class="sub">Android版</span>
-　　　　</a>
-
-    　 <p>
-  　　　※AndroidではChromeで開いてください。<br>
- 　　　　 LINE内のブラウザでは音声が再生されません。
-　　　　</p>
-    </div>
+    <p class="notice">
+      ※LINEなどのアプリ内ブラウザでは、音声が再生されない場合があります。<br>
+      音声が出ない場合は、SafariまたはChromeで開いてください。
+    </p>
   </main>
+
+  <script>
+    function openApp() {
+      location.href = "app.html?v=" + Date.now();
+    }
+  </script>
 </body>
 </html>
