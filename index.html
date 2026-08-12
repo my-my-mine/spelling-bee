@@ -407,12 +407,31 @@ function shuffle(arr){
 
 function normalize(s){return String(s||'').replace(/^\s+|\s+$/g,'').toLowerCase();}
 
+function getMacSamanthaVoice(){
+  var ua=navigator.userAgent||'';
+  var platform=navigator.platform||'';
+  var isIOS=/iPad|iPhone|iPod/.test(ua) ||
+            (platform==='MacIntel' && navigator.maxTouchPoints>1);
+  var isMac=!isIOS && (/Macintosh|Mac OS X/.test(ua) || /Mac/.test(platform));
+  if(!isMac || !window.speechSynthesis) return null;
+
+  var voices=window.speechSynthesis.getVoices()||[];
+  for(var i=0;i<voices.length;i++){
+    if((voices[i].name||'').toLowerCase().indexOf('samantha')!==-1){
+      return voices[i];
+    }
+  }
+  return null;
+}
+
 function speakCurrent(){
   if(!canSpeak || index>=questions.length) return;
   try{window.speechSynthesis.cancel();}catch(e){}
   var word=questions[index][0];
   var sentence=questions[index][1];
   var u=new SpeechSynthesisUtterance(word+'. '+sentence+' '+word+'.');
+  var macSamantha=getMacSamanthaVoice();
+  if(macSamantha) u.voice=macSamantha;
   u.lang='en-US';
   u.rate=0.86;
   u.pitch=1.0;
