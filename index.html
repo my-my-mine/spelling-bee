@@ -424,24 +424,106 @@ function getMacSamanthaVoice(){
   return null;
 }
 
-function speakCurrent(){
+var cachedMacSamantha=null;
+
+function isMacDesktop(){
+  var ua=navigator.userAgent||'';
+  var platform=navigator.platform||'';
+  var isIOS=/iPad|iPhone|iPod/.test(ua) ||
+            (platform==='MacIntel' && navigator.maxTouchPoints>1);
+  return !isIOS && (/Macintosh|Mac OS X/.test(ua) || /Mac/.test(platform));
+}
+
+function refreshMacVoice(){
+  var v=getMacSamanthaVoice();
+  if(v) cachedMacSamantha=v;
+  return cachedMacSamantha;
+}
+
+if(window.speechSynthesis){
+  try{ window.speechSynthesis.getVoices(); }catch(e){}
+  if('onvoiceschanged' in window.speechSynthesis){
+    window.speechSynthesis.addEventListener('voiceschanged', function(){
+      refreshMacVoice();
+    });
+  }
+}
+
+function actuallySpeakCurrent(voice){
   if(!canSpeak || index>=questions.length) return;
+
   try{window.speechSynthesis.cancel();}catch(e){}
+
   var word=questions[index][0];
   var sentence=questions[index][1];
-  var u=new SpeechSynthesisUtterance(word+'. '+sentence+' '+word+'.');
-  var macSamantha=getMacSamanthaVoice();
-  if(macSamantha) u.voice=macSamantha;
-  u.lang='en-US';
-  u.rate=0.86;
-  u.pitch=1.0;
-  u.volume=1.0;
-  u.onerror=function(){ttsStatus.textContent='音声を再生できませんでした。Androidの読み上げ設定を確認してください。';};
+
+  function makeUtterance(text, rate){
+    var u=new SpeechSynthesisUtterance(text);
+    if(voice) u.voice=voice;
+    u.lang='en-US';
+    u.rate=rate;
+    u.pitch=1.0;
+    u.volume=1.0;
+    u.onerror=function(){
+      ttsStatus.textContent='音声を再生できませんでした。端末の読み上げ設定を確認してください。';
+    };
+    return u;
+  }
+
+  var u1=makeUtterance(word, 0.84);
+  var u2=makeUtterance(sentence, 0.90);
+  var u3=makeUtterance(word, 0.84);
+
+  u1.onend=function(){
+    window.setTimeout(function(){
+      try{
+        window.speechSynthesis.speak(u2);
+      }catch(e){
+        ttsStatus.textContent='音声を再生できませんでした。';
+      }
+    },600);
+  };
+
+  u2.onend=function(){
+    window.setTimeout(function(){
+      try{
+        window.speechSynthesis.speak(u3);
+      }catch(e){
+        ttsStatus.textContent='音声を再生できませんでした。';
+      }
+    },600);
+  };
+
   try{
-    window.speechSynthesis.speak(u);
+    window.speechSynthesis.speak(u1);
   }catch(e){
     ttsStatus.textContent='音声を再生できませんでした。';
   }
+}
+
+function speakCurrent(){
+  if(!canSpeak || index>=questions.length) return;
+
+  if(!isMacDesktop()){
+    actuallySpeakCurrent(null);
+    return;
+  }
+
+  var voice=refreshMacVoice();
+  if(voice){
+    actuallySpeakCurrent(voice);
+    return;
+  }
+
+  var tries=0;
+  var timer=window.setInterval(function(){
+    tries++;
+    var v=refreshMacVoice();
+    if(v || tries>=10){
+      window.clearInterval(timer);
+      actuallySpeakCurrent(v || null);
+    }
+  },100);
 }
 
 function updateStatus(){
